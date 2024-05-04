@@ -1,53 +1,54 @@
+import tkinter as tk
 import random
 
 
 def display_board(board):
-
-	print("-------------")
-	for row in board:
-		print("|", end=" ")
-		for cell in row:
-			print(cell, "|", end=" ")
-		print("\n-------------")
+	for i in range(3):
+		for j in range(3):
+			cell_label = tk.Label(root, text=board[i][j], font=('Arial', 30), width=5, height=2, relief="ridge")
+			cell_label.grid(row=i, column=j)
+			cell_label.bind("<Button-1>", lambda event, row=i, col=j: player_move(row, col))
 
 
-def player_move(board):
+def player_move(row, col):
+	if board[row][col] == " ":
+		board[row][col] = "X"
+		display_board(board)
+		if check_winner("X"):
+			result_label.config(text="Congratulations! You win!")
+			new_game_button.config(state=tk.NORMAL)
+		elif check_draw():
+			result_label.config(text="It's a draw!")
+			new_game_button.config(state=tk.NORMAL)
+		else:
+			computer_move()
 
-	while True:
-		try:
-			row = int(input("Enter row number (0, 1, or 2): "))
-			col = int(input("Enter column number (0, 1, or 2): "))
-			if 0 <= row <= 2 and 0 <= col <= 2 and board[row][col] == " ":
-				board[row][col] = "X"
-				break
-			else:
-				print("Invalid move! Please try again.")
-		except ValueError:
-			print("Invalid input! Please enter a number.")
 
-
-def computer_move(board):
-
+def computer_move():
 	while True:
 		row = random.randint(0, 2)
 		col = random.randint(0, 2)
 		if board[row][col] == " ":
 			board[row][col] = "O"
+			display_board(board)
+			if check_winner("O"):
+				result_label.config(text="Sorry, you lose!")
+				new_game_button.config(state=tk.NORMAL)
+			elif check_draw():
+				result_label.config(text="It's a draw!")
+				new_game_button.config(state=tk.NORMAL)
 			break
 
 
-def check_winner(board, player):
-
+def check_winner(player):
 	for row in board:
 		if row.count(player) == 3:
 			return True
 
-	# Check columns
 	for col in range(3):
 		if [board[row][col] for row in range(3)].count(player) == 3:
 			return True
 
-	# Check diagonals
 	if [board[i][i] for i in range(3)].count(player) == 3:
 		return True
 	if [board[i][2 - i] for i in range(3)].count(player) == 3:
@@ -56,40 +57,32 @@ def check_winner(board, player):
 	return False
 
 
-def check_draw(board):
-
+def check_draw():
 	for row in board:
 		if " " in row:
 			return False
 	return True
 
 
-def tic_tac_toe():
-
+def start_new_game():
+	global board
 	board = [[" " for _ in range(3)] for _ in range(3)]
 	display_board(board)
-
-	while True:
-		# Player's move
-		player_move(board)
-		display_board(board)
-		if check_winner(board, "X"):
-			print("Congratulations! You win!")
-			break
-		if check_draw(board):
-			print("It's a draw!")
-			break
-
-		# Computer's move
-		computer_move(board)
-		display_board(board)
-		if check_winner(board, "O"):
-			print("Sorry, you lose!")
-			break
-		if check_draw(board):
-			print("It's a draw!")
-			break
+	result_label.config(text="")
+	new_game_button.config(state=tk.DISABLED)
 
 
-# Start the Tic Tac Toe game
-tic_tac_toe()
+board = [[" " for _ in range(3)] for _ in range(3)]
+
+root = tk.Tk()
+root.title("Tic Tac Toe")
+
+display_board(board)
+
+result_label = tk.Label(root, text="", font=('Arial', 20))
+result_label.grid(row=3, columnspan=3)
+
+new_game_button = tk.Button(root, text="New Game", command=start_new_game)
+new_game_button.grid(row=4, columnspan=3)
+
+root.mainloop()
